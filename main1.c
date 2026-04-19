@@ -19,7 +19,7 @@ int TLBNext = 0;
 /* counters */
 int pageFaults = 0;
 int TLBHits = 0;
-int nextFram = 0;
+int nextFrame = 0;
 int total = 0;
 
 /* main function */
@@ -59,6 +59,24 @@ int main(int argc, char *argv[]) {
                 TLBHits++;
                 break;
             }
+        }
+
+        /* TLB miss */
+        if (frameNum == -1) {
+            if (pageTable[pageNum] == -1) {
+                pageFaults++; /* page fault to load from backing */
+            
+                fseek(backing, pageNum * PAGE_SIZE, SEEK_SET);
+                fread(physicalMem[nextFrame], sizeof(signed char), PAGE_SIZE, backing);
+                pageTable[pageNum] = nextFrame;
+                nextFrame++;
+            }
+            frameNum = pageTable[pageNum];
+
+            /* update TLB */
+            TLBPage[TLBNext] = pageNum;
+            TLBFrame[TLBNext] = frameNum;
+            TLBNext = (TLBNext + 1) % TLB_SIZE;
         }
 
         /* output to terminal */
