@@ -79,9 +79,23 @@ int main(int argc, char *argv[]) {
             TLBNext = (TLBNext + 1) % TLB_SIZE;
         }
 
-        /* output to terminal */
-        printf("Logical: %d, Page: %d, Offset: %d\n", masked, pageNum, offset);
+        int physicalAddress = frameNum * PAGE_SIZE + offset;
+        signed char value = physicalMem[frameNum][offset];
+
+        fprintf(out1, "%d\n", logAddr);
+        fprintf(out2, "%d\n", physicalAddress);
+        fprintf(out3, "%d\n", value);
+
     }
+
+        /* output to terminal */
+    printf("Page faults: %d / %d, %.2f\n", pageFaults, total, (double)pageFaults / total);
+    printf("TLB hits: %d / %d, %.2f\n", TLBHits, total, (double)TLBHits / total);
+    
     fclose(address);
+    fclose(backing);
+    fclose(out1);
+    fclose(out2);
+    fclose(out3);
     return 0;
 }
