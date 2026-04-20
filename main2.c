@@ -3,7 +3,7 @@
 
 /* constants */
 #define PAGE_SIZE 256
-#define FRAME_COUNT 256
+#define FRAME_COUNT 128
 #define TLB_SIZE 16
 #define PAGE_COUNT 256
 
@@ -13,8 +13,11 @@ signed char physicalMem[FRAME_COUNT][PAGE_SIZE]; /* physical memory */
 int pageTable[PAGE_COUNT]; 
 int TLBPage[TLB_SIZE];
 int TLBFrame[TLB_SIZE];
+int FIFO_queue[FRAME_COUNT];
 
 int TLBNext = 0;
+int FIFO_head;
+int FIFO_tail = 0;
 
 /* counters */
 int pageFaults = 0;
@@ -65,11 +68,33 @@ int main(int argc, char *argv[]) {
         if (frameNum == -1) {
             if (pageTable[pageNum] == -1) {
                 pageFaults++; /* page fault to load from backing */
-            
+                
+                int frame;
+
+                if (nextFrame < FRAME_COUNT) {
+                    frame = nextFrame++;
+                }
+                else {
+                    int evictedPage = FIFO_queue[FIFO_head];
+                    frame = pageTable[evictedPage];
+
+                    pageTable[evictedPage] = -1;
+
+                    for (i = 0; i < TLB_SIZE; i++) {
+                        if (TLBPage[i] == evictedPage) {
+                            TLBPage[i] = -1;
+                            TLBFrame[i] = -1;
+                            break;
+                        }
+                    }
+                    FIFO_head = (FIFO_head + 1) % FRAME_COUNT;
+                }
+
                 fseek(backing, pageNum * PAGE_SIZE, SEEK_SET);
-                fread(physicalMem[nextFrame], sizeof(signed char), PAGE_SIZE, backing);
-                pageTable[pageNum] = nextFrame;
-                nextFrame++;
+                fread(physicalMem[frame], sizeof(signed char), PAGE_SIZE, backing);
+                pageTable[pageNum] = frame;
+                FIFO_queue[FIFO_tail] = pageNum;
+                FIFO_tail = (FIFO_tail + 1) % FRAME_COUNT;
             }
             frameNum = pageTable[pageNum];
 
