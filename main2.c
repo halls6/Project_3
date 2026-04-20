@@ -74,10 +74,11 @@ int main(int argc, char *argv[]) {
                 
                 int frame;
 
+                /* requirement 7: implement FIFO based page replacement */
                 if (nextFrame < FRAME_COUNT) { /* free frames available */
                     frame = nextFrame++;
                 }
-                else { /* no fre frames */
+                else { /* no free frames */
                     int evictedPage = FIFO_queue[FIFO_head];
                     frame = pageTable[evictedPage];
 
