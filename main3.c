@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
                     frame = nextFrame++;
                 }
                 else {
+                    /* REQUIREMENT 9: implement LRU page replacement */
                     int LRU_frame = 0;
                     for (int i = 1; i < FRAME_COUNT; i++) {
                         if (LRU_counter[i] < LRU_counter[LRU_frame]) {
@@ -95,7 +96,7 @@ int main(int argc, char *argv[]) {
                             TLBFrame[i] = -1;
                             break;
                         }
-                    }                                   
+                    }                                  
                 }
 
                 fseek(backing, pageNum * PAGE_SIZE, SEEK_SET);
