@@ -13,8 +13,9 @@ signed char physicalMem[FRAME_COUNT][PAGE_SIZE]; /* physical memory */
 int pageTable[PAGE_COUNT]; 
 int TLBPage[TLB_SIZE];
 int TLBFrame[TLB_SIZE];
-int FIFO_queue[FRAME_COUNT];
+int FIFO_queue[FRAME_COUNT]; /* track page replacement */
 
+/* FIFO */
 int TLBNext = 0;
 int FIFO_head;
 int FIFO_tail = 0;
@@ -49,6 +50,7 @@ int main(int argc, char *argv[]) {
 
     int logAddr;
 
+    /* logical addresses from file */
     while (fscanf(address, "%d", &logAddr) == 1) {
         total++;
         int masked = logAddr & 0xFFFF; /* rightmost 16 bits masked */
@@ -56,6 +58,7 @@ int main(int argc, char *argv[]) {
         int offset = masked & 0xFF; /* get offset */
         int frameNum = -1;
 
+        /* search TLB for page num */
         for (i = 0; i < TLB_SIZE; i++) {
             if (TLBPage[i] == pageNum) {
                 frameNum = TLBFrame[i];
@@ -71,10 +74,10 @@ int main(int argc, char *argv[]) {
                 
                 int frame;
 
-                if (nextFrame < FRAME_COUNT) {
+                if (nextFrame < FRAME_COUNT) { /* free frames available */
                     frame = nextFrame++;
                 }
-                else {
+                else { /* no fre frames */
                     int evictedPage = FIFO_queue[FIFO_head];
                     frame = pageTable[evictedPage];
 
@@ -87,6 +90,7 @@ int main(int argc, char *argv[]) {
                             break;
                         }
                     }
+                    /* FIFO head to next oldest page */
                     FIFO_head = (FIFO_head + 1) % FRAME_COUNT;
                 }
 
@@ -122,5 +126,6 @@ int main(int argc, char *argv[]) {
     fclose(out1);
     fclose(out2);
     fclose(out3);
+    
     return 0;
 }

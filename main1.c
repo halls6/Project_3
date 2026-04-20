@@ -46,6 +46,7 @@ int main(int argc, char *argv[]) {
 
     int logAddr;
 
+    /* logical addresses from files */
     while (fscanf(address, "%d", &logAddr) == 1) {
         total++;
         int masked = logAddr & 0xFFFF; /* rightmost 16 bits masked */
@@ -53,6 +54,7 @@ int main(int argc, char *argv[]) {
         int offset = masked & 0xFF; /* get offset */
         int frameNum = -1;
 
+        /* search TLB for page num */
         for (i = 0; i < TLB_SIZE; i++) {
             if (TLBPage[i] == pageNum) {
                 frameNum = TLBFrame[i];
@@ -82,20 +84,23 @@ int main(int argc, char *argv[]) {
         int physicalAddress = frameNum * PAGE_SIZE + offset;
         signed char value = physicalMem[frameNum][offset];
 
+        /* write to output files */
         fprintf(out1, "%d\n", logAddr);
         fprintf(out2, "%d\n", physicalAddress);
         fprintf(out3, "%d\n", value);
 
     }
 
-        /* output to terminal */
+    /* output to terminal */
     printf("Page faults: %d / %d, %.2f\n", pageFaults, total, (double)pageFaults / total);
     printf("TLB hits: %d / %d, %.2f\n", TLBHits, total, (double)TLBHits / total);
     
+    /* close files */
     fclose(address);
     fclose(backing);
     fclose(out1);
     fclose(out2);
     fclose(out3);
+    
     return 0;
 }

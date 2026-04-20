@@ -15,6 +15,7 @@ int TLBPage[TLB_SIZE];
 int TLBFrame[TLB_SIZE];
 int LRU_counter[FRAME_COUNT];
 
+/* LRU variables */
 int TLBNext = 0;
 int frame_to_page[FRAME_COUNT];
 int time_stamp = 0;
